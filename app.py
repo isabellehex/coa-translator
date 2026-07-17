@@ -110,8 +110,79 @@ def extract_text_from_file(uploaded_file) -> str:
         raise ValueError("Неподдерживаемый формат файла")
 
 # ==========================================
-# 3. МОДУЛЬ ГИБРИДНОГО ПЕРЕВОДА
+# 3. МОДУЛЬ ГИБРИДНОГО ПЕРЕВОДА И АВТОПОПОЛНЕНИЯ
 # ==========================================
+import base64
+
+def add_to_github_dictionary(eng_phrase: str, rus_phrase: str):
+    """Автоматически добавляет новую пару слов в dictionary.csv на GitHub"""
+    if "github" not in st.secrets:
+        return
+        
+    g_sec = st.secrets["github"]
+    token = g_sec.get("token")
+    repo = g_sec.get("repo")
+    branch = g_sec.get("branch", "main")
+    file_path = "dictionary.csv"
+    
+    if not token or not repo:
+        return
+
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    
+    try:
+        # Шаг 1: Получаем текущее содержимое файла и его SHA
+        response = requests.get(url, headers=headers, params={"ref": branch}, timeout=10)
+        
+        if response.status_code == 200:
+            file_data = response.json()
+            sha = file_data["sha"]
+            # Декодируем старое содержимое из Base64
+            current_content = base64.b64decode(file_data["content"]).decode("utf-8")
+        elif response.status_code == 404:
+            # Если файла почему-то нет, создаем его с заголовком
+            sha = None
+            current_content = "english;russian"
+        else:
+            return # Ошибка доступа к GitHub API
+            
+        # Проверяем на всякий случай, нет ли уже этой фразы в файле
+        new_line = f"{eng_phrase.strip().lower()};{rus_phrase.strip()}"
+        if new_line in current_content:
+            return
+            
+        # Шаг 2: Формируем обновленный контент (добавляем строку с новой строки)
+        if current_content.endswith("\n") or current_content.endswith("\r"):
+            updated_content = current_content + new_line + "\n"
+        else:
+            updated_content = current_content + "\n" + new_line + "\n"
+            
+        # Кодируем обратно в Base64
+        encoded_content = base64.b64encode(updated_content.encode("utf-8")).decode("utf-8")
+        
+        # Шаг 3: Отправляем коммит на GitHub
+        commit_data = {
+            "message": f"🤖 Авто-добавление термина: {eng_phrase}",
+            "content": encoded_content,
+            "branch": branch
+        }
+        if sha:
+            commit_data["sha"] = sha
+            
+        put_response = requests.put(url, headers=headers, json=commit_data, timeout=10)
+        
+        if put_response.status_code in [200, 201]:
+            # Вручную обновляем локальный кэш словаря в памяти, 
+            # чтобы при следующем клике не делать повторный запрос в YandexGPT
+            COA_DICTIONARY[eng_phrase.strip().lower()] = rus_phrase.strip()
+    except Exception:
+        pass # Тихо игнорируем ошибки гитхаба, чтобы не ломать пользователю интерфейс
+
+
 def translate_via_yandex_gpt(text: str) -> str:
     if not text.strip():
         return text
@@ -143,15 +214,31 @@ def translate_via_yandex_gpt(text: str) -> str:
     except Exception as e:
         return f"[Ошибка: {e}] {text}"
 
+
 def translate_cell_or_line(text: str) -> str:
     cleaned = text.strip()
     if not cleaned:
         return ""
+        
+    # 1. Проверка на цифры/формулы
     if any(char.isdigit() for char in cleaned) and not any(char.isalpha() for char in cleaned):
         return cleaned
-    if cleaned.lower() in COA_DICTIONARY:
-        return COA_DICTIONARY[cleaned.lower()]
-    return translate_via_yandex_gpt(cleaned)
+        
+    # 2. Поиск в существующем CSV-словаре
+    cleaned_lower = cleaned.lower()
+    if cleaned_lower in COA_DICTIONARY:
+        return COA_DICTIONARY[cleaned_lower]
+        
+    # 3. Если совпадений нет — переводим через YandexGPT
+    translated = translate_via_yandex_gpt(cleaned)
+    
+    # 4. Если перевод успешный (не вернул ошибку API), отправляем новинку на GitHub
+    if translated and not translated.startswith("[Ошибка"):
+        # Запускаем фоновую отправку на GitHub
+        add_to_github_dictionary(cleaned, translated)
+        
+    return translated
+
 
 def process_coa_translation(raw_text: str) -> str:
     translated_lines = []
