@@ -462,7 +462,7 @@ raw_text_to_translate = ""
 
 with col_input:
     st.subheader("📥 Входные данные")
-    tab_text, tab_file = st.tabs(["📝 Вставить текст", "📄 Загрузить файл"])
+    tab_file, tab_text = st.tabs(["📄 Загрузить файл", "📝 Вставить текст"])
     
     with tab_text:
         input_text = st.text_area(
