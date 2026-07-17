@@ -544,17 +544,7 @@ raw_text_to_translate = ""
 with col_input:
     st.subheader("📥 Входные данные")
     tab_file, tab_text = st.tabs(["📄 Загрузить файл", "📝 Вставить текст"])
-    # ... (после блоков tab_text и tab_file) ...
-    
-    st.write("---")
-    st.subheader("✏️ Корректировка данных")
-    custom_product_name_ru = st.text_input(
-        "Название продукта на русском (опционально):",
-        placeholder="Например: АДЕНОЗИН, ХЧ (если оставить пустым — переведет автоматически)",
-        help="Введенное сюда название гарантированно попадет в финальный русский PDF вместо автоматического перевода."
-    )
-
-    
+   
     with tab_text:
         input_text = st.text_area(
             "Вставьте скопированный текст сертификата:",
@@ -577,7 +567,14 @@ with col_input:
                     st.text(raw_text_to_translate[:1000] + "...")
             except Exception as e:
                 st.error(f"Ошибка при парсинге файла: {e}")
-
+   
+    st.write("---")
+    st.subheader("✏️ Корректировка данных")
+    custom_product_name_ru = st.text_input(
+        "Название продукта на русском (опционально):",
+        placeholder="Например: АДЕНОЗИН, ХЧ (если оставить пустым — переведет автоматически)",
+        help="Введенное сюда название гарантированно попадет в финальный русский PDF вместо автоматического перевода."
+    )
     st.write("---")
     start_translation = st.button("🚀 Перевести и собрать PDF", type="primary", use_container_width=True)
 
