@@ -90,3 +90,4 @@ uv transmittance (1cm cell, ref: water):;Коэффициент пропуска
 at 270 nm;at 270 nm
 min 10%;Min 10%
 at 280 nm;at 280 nm
+min 40%;Min 40%
