@@ -14,6 +14,13 @@ from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
+# Инициализация конфигурации страницы Streamlit (ДОЛЖНА БЫТЬ В САМОМ НАЧАЛЕ)
+st.set_page_config(
+    page_title="Переводчик Сертификатов Анализа (CoA)",
+    page_icon="🧪",
+    layout="wide"
+)
+
 # ==========================================
 # 0. РЕГИСТРАЦИЯ ШРИФТОВ CALIBRI
 # ==========================================
@@ -25,11 +32,11 @@ except Exception as e:
     st.error(f"Ошибка регистрации шрифтов Calibri: {e}. Убедитесь, что файлы CALIBRI.TTF, CALIBRIB.TTF, CALIBRII.TTF загружены в корень проекта.")
 
 # ==========================================
-# 1. ЗАГРУЗКА СЛОВАРЯ ИЗ CSV
+# 1. ЗАГРУЗКА И ИНИЦИАЛИЗАЦИЯ СЛОВАРЯ (SESSION STATE)
 # ==========================================
-@st.cache_data
-def load_dictionary(file_path="dictionary.csv"):
-    """Читает CSV словарь из репозитория и переводит в dict с нижним регистром в ключах"""
+
+def load_dictionary_from_csv(file_path="dictionary.csv"):
+    """Читает CSV словарь из репозитория и переводит в чистый dict"""
     coa_dict = {}
     try:
         with open(file_path, mode='r', encoding='utf-8') as f:
@@ -44,14 +51,9 @@ def load_dictionary(file_path="dictionary.csv"):
         st.error(f"Не удалось загрузить dictionary.csv: {e}")
     return coa_dict
 
-COA_DICTIONARY = load_dictionary()
-
-# Инициализация конфигурации страницы Streamlit
-st.set_page_config(
-    page_title="Переводчик Сертификатов Анализа (CoA)",
-    page_icon="🧪",
-    layout="wide"
-)
+# Храним словарь в session_state, чтобы изменения не стирались при перезапуске страницы
+if "coa_dictionary" not in st.session_state:
+    st.session_state["coa_dictionary"] = load_dictionary_from_csv()
 
 # ==========================================
 # 2. МОДУЛЬ ПАРСИНГА (DOCX & PDF)
@@ -70,11 +72,7 @@ def parse_docx(file_bytes) -> str:
             for table in doc.tables:
                 if table._element == element:
                     for row in table.rows:
-                        # Просто забираем текст из каждой ячейки как есть, заменяя переносы на пробелы
                         row_text = [cell.text.strip().replace("\n", " ") for cell in row.cells]
-                        
-                        # Больше никакого схлопывания дубликатов! 
-                        # Сохраняем полную структуру строки для точного разделения через '|'
                         full_text.append(" | ".join(row_text))
                     break
     return "\n".join(full_text)
@@ -135,33 +133,26 @@ def add_to_github_dictionary(eng_phrase: str, rus_phrase: str):
     }
     
     try:
-        # Шаг 1: Получаем текущее содержимое файла и его SHA
         response = requests.get(url, headers=headers, params={"ref": branch}, timeout=10)
         
         if response.status_code == 200:
             file_data = response.json()
             sha = file_data["sha"]
-            # Декодируем старое содержимое из Base64
             current_content = base64.b64decode(file_data["content"]).decode("utf-8")
         elif response.status_code == 404:
-            # Если файла почему-то нет, создаем его с заголовком
             sha = None
             current_content = "english;russian"
         else:
             return # Ошибка доступа к GitHub API
-            
-        # Проверяем на всякий случай, нет ли уже этой фразы в файле
         new_line = f"{eng_phrase.strip().lower()};{rus_phrase.strip()}"
         if new_line in current_content:
             return
-            
-        # Шаг 2: Формируем обновленный контент (добавляем строку с новой строки)
+
         if current_content.endswith("\n") or current_content.endswith("\r"):
             updated_content = current_content + new_line + "\n"
         else:
             updated_content = current_content + "\n" + new_line + "\n"
-            
-        # Кодируем обратно в Base64
+
         encoded_content = base64.b64encode(updated_content.encode("utf-8")).decode("utf-8")
         
         # Шаг 3: Отправляем коммит на GitHub
@@ -176,11 +167,10 @@ def add_to_github_dictionary(eng_phrase: str, rus_phrase: str):
         put_response = requests.put(url, headers=headers, json=commit_data, timeout=10)
         
         if put_response.status_code in [200, 201]:
-            # Вручную обновляем локальный кэш словаря в памяти, 
-            # чтобы при следующем клике не делать повторный запрос в YandexGPT
-            COA_DICTIONARY[eng_phrase.strip().lower()] = rus_phrase.strip()
+            # Важнейший шаг: пишем в session_state, чтобы изменение применилось мгновенно!
+            st.session_state["coa_dictionary"][eng_phrase.strip().lower()] = rus_phrase.strip()
     except Exception:
-        pass # Тихо игнорируем ошибки гитхаба, чтобы не ломать пользователю интерфейс
+        pass
 
 def save_full_dictionary_to_github(dataframe):
     """Полностью перезаписывает dictionary.csv на GitHub на основе измененного DataFrame"""
@@ -226,8 +216,8 @@ def save_full_dictionary_to_github(dataframe):
         put_response = requests.put(url, headers=headers, json=commit_data, timeout=10)
         
         if put_response.status_code in [200, 201]:
-            # Сбрасываем кэш Streamlit, чтобы при перезагрузке словарь считался заново
-            st.cache_data.clear()
+            # Перечитываем обновленный словарь напрямую в сессию
+            st.session_state["coa_dictionary"] = load_dictionary_from_csv()
             return True
         else:
             st.error(f"GitHub API вернул ошибку: {put_response.status_code}")
@@ -277,10 +267,11 @@ def translate_cell_or_line(text: str) -> str:
     if any(char.isdigit() for char in cleaned) and not any(char.isalpha() for char in cleaned):
         return cleaned
         
-    # 2. Поиск в существующем CSV-словаре
+ # 2. Поиск в существующем CSV-словаре, хранящемся в session_state
     cleaned_lower = cleaned.lower()
-    if cleaned_lower in COA_DICTIONARY:
-        return COA_DICTIONARY[cleaned_lower]
+    local_dict = st.session_state["coa_dictionary"]
+    if cleaned_lower in local_dict:
+        return local_dict[cleaned_lower]
         
     # 3. Если совпадений нет — переводим через YandexGPT
     translated = translate_via_yandex_gpt(cleaned)
@@ -587,7 +578,7 @@ with col_preview:
         else:
             with st.spinner("Перевод текста и верстка двухстраничного PDF..."):
                 # 1. Запускаем переводчик для получения русской версии
-                russian_translated_text = process_coa_translation(raw_text_to_translate)
+                russian_translated_text = process_coa_translation(raw_text_to_translate, custom_name_ru=custom_product_name_ru)
                 
                 # 2. Передаем английский оригинал и русский перевод в генератор PDF
                 pdf_data = create_two_page_coa_pdf(raw_text_to_translate, russian_translated_text)
@@ -617,22 +608,17 @@ with col_preview:
 st.write("---")
 st.subheader("📖 Редактор словаря перевода (dictionary.csv)")
 
-if COA_DICTIONARY:
+local_dict = st.session_state["coa_dictionary"]
+if local_dict:
     import pandas as pd
-    
-    # 1. Переводим текущий словарь в pandas DataFrame для st.data_editor
-    # Используем исходный словарь, но так как в памяти ключи хранятся в нижнем регистре,
-    # для красоты отображения можно оставить как есть, либо читать напрямую
     dict_data = {
-        "english": list(COA_DICTIONARY.keys()),
-        "russian": list(COA_DICTIONARY.values())
+        "english": list(local_dict.keys()),
+        "russian": list(local_dict.values())
     }
     df_dict = pd.DataFrame(dict_data)
     
     st.write(f"Сейчас в словаре фраз: **{len(df_dict)}**. Вы можете изменять ячейки, добавлять новые строки внизу таблицы или удалять выделенные.")
-    
-    # 2. Выводим интерактивный редактор таблиц
-    # num_rows="dynamic" позволяет пользователю нажимать "+" для добавления строк
+   
     edited_df = st.data_editor(
         df_dict, 
         num_rows="dynamic", 
