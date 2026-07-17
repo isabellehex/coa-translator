@@ -70,12 +70,12 @@ def parse_docx(file_bytes) -> str:
             for table in doc.tables:
                 if table._element == element:
                     for row in table.rows:
+                        # Просто забираем текст из каждой ячейки как есть, заменяя переносы на пробелы
                         row_text = [cell.text.strip().replace("\n", " ") for cell in row.cells]
-                        unique_row_text = []
-                        for cell in row_text:
-                            if not unique_row_text or unique_row_text[-1] != cell:
-                                unique_row_text.append(cell)
-                        full_text.append(" | ".join(unique_row_text))
+                        
+                        # Больше никакого схлопывания дубликатов! 
+                        # Сохраняем полную структуру строки для точного разделения через '|'
+                        full_text.append(" | ".join(row_text))
                     break
     return "\n".join(full_text)
 
