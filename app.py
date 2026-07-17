@@ -3,6 +3,30 @@ import io
 from docx import Document
 import pdfplumber
 import requests
+import csv
+
+# ==========================================
+# ЗАГРУЗКА СЛОВАРЯ ИЗ CSV
+# ==========================================
+@st.cache_data  # Кэшируем, чтобы не перечитывать файл при каждом клике
+def load_dictionary(file_path="dictionary.csv"):
+    """Читает CSV словарь из репозитория и переводит в dict с нижним регистром в ключах"""
+    coa_dict = {}
+    try:
+        with open(file_path, mode='r', encoding='utf-8') as f:
+            reader = csv.reader(f, delimiter=';')
+            next(reader)  # Пропускаем заголовок english;russian
+            for row in reader:
+                if len(row) >= 2:
+                    eng_phrase = row[0].strip().lower()
+                    rus_phrase = row[1].strip()
+                    coa_dict[eng_phrase] = rus_phrase
+    except Exception as e:
+        st.error(f"Не удалось загрузить dictionary.csv: {e}")
+    return coa_dict
+
+# Загружаем словарь в память
+COA_DICTIONARY = load_dictionary()
 
 # ==========================================
 # 1. НАСТРОЙКА СТРАНИЦЫ
