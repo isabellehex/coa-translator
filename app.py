@@ -182,6 +182,59 @@ def add_to_github_dictionary(eng_phrase: str, rus_phrase: str):
     except Exception:
         pass # Тихо игнорируем ошибки гитхаба, чтобы не ломать пользователю интерфейс
 
+def save_full_dictionary_to_github(dataframe):
+    """Полностью перезаписывает dictionary.csv на GitHub на основе измененного DataFrame"""
+    if "github" not in st.secrets:
+        st.error("Ключи GitHub не найдены в secrets!")
+        return False
+        
+    g_sec = st.secrets["github"]
+    token = g_sec.get("token")
+    repo = g_sec.get("repo")
+    branch = g_sec.get("branch", "main")
+    file_path = "dictionary.csv"
+    
+    url = f"https://api.github.com/repos/{repo}/contents/{file_path}"
+    headers = {
+        "Authorization": f"token {token}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    
+    try:
+        # Шаг 1: Конвертируем DataFrame в строку CSV с разделителем ';'
+        # Убираем индекс pandas, чтобы он не попадал в файл
+        csv_buffer = io.StringIO()
+        dataframe.to_csv(csv_buffer, sep=';', index=False, encoding='utf-8')
+        new_csv_content = csv_buffer.getvalue()
+        
+        # Шаг 2: Получаем текущий SHA файла, чтобы разрешить перезапись
+        response = requests.get(url, headers=headers, params={"ref": branch}, timeout=10)
+        sha = response.json()["sha"] if response.status_code == 200 else None
+        
+        # Шаг 3: Кодируем новый контент в Base64
+        encoded_content = base64.b64encode(new_csv_content.encode("utf-8")).decode("utf-8")
+        
+        # Шаг 4: Отправляем коммит
+        commit_data = {
+            "message": "📝 Ручное обновление словаря через интерфейс Streamlit",
+            "content": encoded_content,
+            "branch": branch
+        }
+        if sha:
+            commit_data["sha"] = sha
+            
+        put_response = requests.put(url, headers=headers, json=commit_data, timeout=10)
+        
+        if put_response.status_code in [200, 201]:
+            # Сбрасываем кэш Streamlit, чтобы при перезагрузке словарь считался заново
+            st.cache_data.clear()
+            return True
+        else:
+            st.error(f"GitHub API вернул ошибку: {put_response.status_code}")
+            return False
+    except Exception as e:
+        st.error(f"Не удалось сохранить словарь на GitHub: {e}")
+        return False
 
 def translate_via_yandex_gpt(text: str) -> str:
     if not text.strip():
@@ -522,3 +575,50 @@ with col_preview:
                     )
     else:
         st.info("Результат генерации PDF и кнопка скачивания появятся здесь после запуска.")
+
+# ==========================================
+# 8. ИНТЕРАКТИВНОЕ УПРАВЛЕНИЕ СЛОВАРЕМ
+# ==========================================
+st.write("---")
+st.subheader("📖 Редактор словаря перевода (dictionary.csv)")
+
+if COA_DICTIONARY:
+    import pandas as pd
+    
+    # 1. Переводим текущий словарь в pandas DataFrame для st.data_editor
+    # Используем исходный словарь, но так как в памяти ключи хранятся в нижнем регистре,
+    # для красоты отображения можно оставить как есть, либо читать напрямую
+    dict_data = {
+        "english": list(COA_DICTIONARY.keys()),
+        "russian": list(COA_DICTIONARY.values())
+    }
+    df_dict = pd.DataFrame(dict_data)
+    
+    st.write(f"Сейчас в словаре фраз: **{len(df_dict)}**. Вы можете изменять ячейки, добавлять новые строки внизу таблицы или удалять выделенные.")
+    
+    # 2. Выводим интерактивный редактор таблиц
+    # num_rows="dynamic" позволяет пользователю нажимать "+" для добавления строк
+    edited_df = st.data_editor(
+        df_dict, 
+        num_rows="dynamic", 
+        use_container_width=True,
+        column_config={
+            "english": st.column_config.TextColumn("Английская фраза (оригинал)", required=True),
+            "russian": st.column_config.TextColumn("Русский перевод", required=True)
+        }
+    )
+    
+    # 3. Кнопка отправки изменений на GitHub
+    if st.button("💾 Применить изменения и коммитить в GitHub", type="secondary"):
+        with st.spinner("Отправляем обновленный словарь в репозиторий..."):
+            # Проверяем, что текстовые поля не пустые, очищаем пробелы
+            edited_df['english'] = edited_df['english'].astype(str).str.strip()
+            edited_df['russian'] = edited_df['russian'].astype(str).str.strip()
+            edited_df = edited_df[edited_df['english'] != ""]
+            
+            success = save_full_dictionary_to_github(edited_df)
+            if success:
+                st.success("Словарь успешно обновлен на GitHub и перезагружен в приложении!")
+                st.rerun() # Перезапускаем приложение, чтобы обновить состояние памяти
+else:
+    st.warning("Словарь пуст или файл dictionary.csv не найден в корне проекта.")
