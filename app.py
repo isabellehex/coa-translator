@@ -157,6 +157,101 @@ with st.sidebar:
     st.caption("Ключи берутся автоматически из Streamlit Secrets.")
 
 # ==========================================
+# МОДУЛЬ ГИБРИДНОГО ПЕРЕВОДА
+# ==========================================
+
+def translate_via_yandex_gpt(text: str) -> str:
+    """Отправляет текст на перевод в Yandex GPT при отсутствии в словаре"""
+    if not text.strip():
+        return text
+        
+    if "yandex" not in st.secrets:
+        return f"[Ключи Yandex не найдены] {text}"
+        
+    folder_id = st.secrets["yandex"]["folder_id"]
+    api_key = st.secrets["yandex"]["api_key"]
+    
+    url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+    headers = {
+        "Authorization": f"Api-Key {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    data = {
+        "modelUri": f"gpt://{folder_id}/yandexgpt-lite",
+        "completionOptions": {
+            "stream": False,
+            "temperature": 0.1,  # Низкая температура для строгого перевода без фантазий
+            "maxTokens": "2000"
+        },
+        "messages": [
+            {
+                "role": "system",
+                "text": (
+                    "Ты профессиональный переводчик химической и лабораторной документации. "
+                    "Переведи предоставленный текст на русский язык. Сохраняй химическую терминологию. "
+                    "Переводи строго только сам текст. Не изменяй формулы, цифры, даты, сокращения "
+                    "физических величин (например, °C) или спецсимволы. Не добавляй никаких пояснений, "
+                    "комментариев от себя или вводных фраз. Выдавай только чистый перевод."
+                )
+            },
+            {
+                "role": "user",
+                "text": text
+            }
+        ]
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=15)
+        if response.status_code == 200:
+            result = response.json()
+            translated_text = result["result"]["alternatives"][0]["message"]["text"]
+            return translated_text.strip()
+        else:
+            return f"[Ошибка API {response.status_code}] {text}"
+    except Exception as e:
+        return f"[Ошибка подключения: {e}] {text}"
+
+
+def translate_cell_or_line(text: str) -> str:
+    """Логика перевода элемента: проверка на цифры -> поиск в CSV-словаре -> YandexGPT"""
+    cleaned = text.strip()
+    
+    if not cleaned:
+        return ""
+        
+    # 1. Защита для чистых цифр, формул, диапазонов и дат (чтобы не гонять их в сеть)
+    # Если в строке есть цифры, но абсолютно нет букв (например, "58-61-7", "233 - 238 °C", "< 0.001%")
+    if any(char.isdigit() for char in cleaned) and not any(char.isalpha() for char in cleaned):
+        return cleaned
+        
+    # 2. Ищем фразу в словаре из CSV (сверяем в нижнем регистре)
+    if cleaned.lower() in COA_DICTIONARY:
+        return COA_DICTIONARY[cleaned.lower()]
+        
+    # 3. Если совпадений нет — отдаем в YandexGPT
+    return translate_via_yandex_gpt(cleaned)
+
+
+def process_coa_translation(raw_text: str) -> str:
+    """Разбивает текст на строки, бережно переводит ячейки таблиц через '|' и собирает обратно"""
+    translated_lines = []
+    lines = raw_text.split("\n")
+    
+    for line in lines:
+        if "|" in line:
+            # Строка является частью таблицы — бьем на ячейки, сохраняя разметку
+            cells = line.split("|")
+            translated_cells = [translate_cell_or_line(cell) for cell in cells]
+            translated_lines.append(" | ".join(translated_cells))
+        else:
+            # Обычный текст (шапка, дисклеймеры)
+            translated_lines.append(translate_cell_or_line(line))
+            
+    return "\n".join(translated_lines)
+
+# ==========================================
 # 4. ОСНОВНАЯ ЧАСТЬ ИНТЕРФЕЙСА
 # ==========================================
 st.title("🧪 Переводчик Сертификатов Анализа (CoA)")
@@ -206,13 +301,22 @@ with col_preview:
     st.subheader("📤 Результат перевода")
     
     if start_translation:
-        if not raw_text_to_translate.strip() and not uploaded_file:
+        if not raw_text_to_translate.strip():
             st.warning("Пожалуйста, введите текст или загрузите файл.")
         else:
-            with st.spinner("Перевод в процессе..."):
-                st.success("Парсер отработал. Текст готов к передаче в модуль перевода!")
-                # Выводим финальный текст в блок кода, чтобы убедиться в правильности структуры
-                st.markdown("### Финальный текст для перевода:")
-                st.code(raw_text_to_translate, language="text")
+            with st.spinner("Перевод в процессе... Сверяемся со словарем и запрашиваем Yandex GPT..."):
+                # Запуск функции гибридного перевода
+                translated_result = process_coa_translation(raw_text_to_translate)
+                
+                st.success("Перевод успешно завершен!")
+                
+                tab_res_text, tab_res_docx = st.tabs(["👀 Предпросмотр текста", "💾 Скачать документ"])
+                
+                with tab_res_text:
+                    st.markdown("### Переведенный текст:")
+                    st.text_area("Результат:", value=translated_result, height=400)
+                    
+                with tab_res_docx:
+                    st.info("Перевод готов. На следующем шаге мы настроим экспорт этого текста обратно в файл .docx")
     else:
         st.info("Результат перевода появится здесь после запуска процесса.")
