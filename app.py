@@ -2,6 +2,7 @@ import streamlit as st
 import io
 from docx import Document
 import pdfplumber
+import requests
 
 # ==========================================
 # 1. НАСТРОЙКА СТРАНИЦЫ
