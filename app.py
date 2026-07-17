@@ -335,8 +335,8 @@ def build_pdf_page_elements(story, text_content, is_russian=False):
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0096D6')),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
         ]
         # Добавляем чередование строк (зебру) для Таблицы 1
@@ -371,8 +371,8 @@ def build_pdf_page_elements(story, text_content, is_russian=False):
             ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0096D6')),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
             ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
         ]
         # Зебра для Таблицы 2
