@@ -293,15 +293,43 @@ def translate_cell_or_line(text: str) -> str:
     return translated
 
 
-def process_coa_translation(raw_text: str) -> str:
+def process_coa_translation(raw_text: str, custom_name_ru: str = "") -> str:
+    """Разбивает текст на строки, бережно переводит ячейки таблиц через '|' и собирает обратно"""
     translated_lines = []
+    
     for line in raw_text.split("\n"):
         if "|" in line:
             cells = line.split("|")
-            translated_cells = [translate_cell_or_line(cell) for cell in cells]
+            
+            # 1. Проверяем маркеры строк
+            is_product_name_row = any(marker in cells[0].lower() for marker in ["product name", "наименование продукта"])
+            is_formula_row = any(marker in cells[0].lower() for marker in ["molecular formula", "молекулярная формула"])
+            
+            # 2. Логика для названия продукта (ручной ввод)
+            if is_product_name_row and custom_name_ru.strip():
+                translated_cells = [
+                    translate_cell_or_line(cells[0]), 
+                    custom_name_ru.strip()
+                ]
+                if len(cells) > 2:
+                    translated_cells.extend([translate_cell_or_line(c) for c in cells[2:]])
+                    
+            # 3. Логика для молекулярной формулы (полная защита от цензуры нейросети)
+            elif is_formula_row:
+                translated_cells = [translate_cell_or_line(cells[0])] # Переводим только левую ячейку "MOLECULAR FORMULA"
+                if len(cells) > 1:
+                    translated_cells.append(cells[1].strip()) # Саму формулу (ячейку 1) оставляем как в оригинале
+                if len(cells) > 2:
+                    translated_cells.extend([translate_cell_or_line(c) for c in cells[2:]])
+                    
+            # 4. Обычные строки
+            else:
+                translated_cells = [translate_cell_or_line(cell) for cell in cells]
+                
             translated_lines.append(" | ".join(translated_cells))
         else:
             translated_lines.append(translate_cell_or_line(line))
+            
     return "\n".join(translated_lines)
 
 # ==========================================
