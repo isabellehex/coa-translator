@@ -1,27 +1,27 @@
 english;russian
-"Certificate of Analysis";"Сертификат анализа"
-"PRODUCT NAME";"НАИМЕНОВАНИЕ ПРОДУКТА"
-"For Biochemistry";"Для биохимии"
-"CAS NUMBER";"НОМЕР CAS"
-"MOLECULAR FORMULA";"МОЛЕКУЛЯРНАЯ ФОРМУЛА"
-"MOLECULAR WEIGHT (M.W)";"МОЛЕКУЛЯРНЫЙ ВЕС (М.В.)"
-"BATCH NUMBER";"НОМЕР ПАРТИИ"
-"MFG DATE";"ДАТА ПРОИЗВОДСТВА"
-"BEST BEFORE";"ГОДЕН ДО"
-"DATE OF ANALYSIS";"ДАТА АНАЛИЗА"
-"DESCRIPTION";"ПОКАЗАТЕЛЬ"
-"LIMITS";"ТРЕБОВАНИЯ"
-"RESULTS";"РЕЗУЛЬТАТЫ"
-"TEST METHOD";"МЕТОД ИСПЫТАНИЯ"
-"Appearance";"Внешний вид"
-"White powder";"Белый порошок"
-"VISUAL";"Визуальный"
-"Assay";"Содержание основного вещества"
-"Melting range";"Диапазон температуры плавления"
-"Heavy metal (as Pb)";"Тяжелые металлы (в пересчете на Pb)"
-"DISCLAIMER:";"ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ:"
-"Min";"Мин."
-"Max";"Макс."
+certificate of analysis;Сертификат анализа
+product name;НАИМЕНОВАНИЕ ПРОДУКТА
+for biochemistry;Для биохимии
+cas number;НОМЕР CAS
+molecular formula;МОЛЕКУЛЯРНАЯ ФОРМУЛА
+molecular weight (m.w);МОЛЕКУЛЯРНЫЙ ВЕС (М.В.)
+batch number;НОМЕР ПАРТИИ
+mfg date;ДАТА ПРОИЗВОДСТВА
+best before;ГОДЕН ДО
+date of analysis;ДАТА АНАЛИЗА
+description;ПОКАЗАТЕЛЬ
+limits;ТРЕБОВАНИЯ
+results;РЕЗУЛЬТАТЫ
+test method;МЕТОД ИСПЫТАНИЯ
+appearance;Внешний вид
+white powder;Белый порошок
+visual;Визуальный
+assay;Содержание основного вещества
+melting range;Диапазон температуры плавления
+heavy metal (as pb);Тяжелые металлы (в пересчете на Pb)
+disclaimer:;ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ:
+min;Мин.
+max;Макс.
 www.spanlab.in;www.spanlab.in
 formic acid ar;ФОРМИАТОВАЯ КИСЛОТА AR
 ch2o2;CH2O2
@@ -34,7 +34,7 @@ min 98%;Min 98%
 gc;GC (ГХ) — газовая хроматография.
 weight/ ml at 20°c;Вес/мл при 20°C
 1.216 - 1.220 g;1.216 - 1.220 г
-1.219 g;1.219 г
+1.219 g;1.219 g
 astm-d-1613-17;ASTM-D-1613-17
 freezing point;Точка замерзания
 min 5.5 deg c;Min 5,5 °C
@@ -58,10 +58,9 @@ not detected;Не обнаружено
 lead (pb);Свинец (Pb)
 non-volatile matter;Нелетучие вещества
 span chemie™ products are to be used as lab chemicals for r&d only. not for drug,;Продукты Span Chemie™ должны использоваться в качестве лабораторных химических веществ только для исследований и разработок. Не для лекарственных препаратов,
-medicinal, household or other uses.;Лекарственное, бытовое или иное применение.
-span chemie™ shall not be responsible for any damage resulting from handling or from;Span Chemie™ не несёт ответственности за любой ущерб, возникший в результате обращения с ним.
-contact with the above product.;Контакт с вышеуказанным продуктом.
-1.219 g;1.219 g
+medicinal, household or other uses.;медицинского, бытового или иного применения.
+span chemie™ shall not be responsible for any damage resulting from handling or from;Span Chemie™ не несёт ответственности за любой ущерб, возникший в результате обращения с веществом или из-за контакта с вышеуказанным продуктом.
+contact with the above product.;
 dimethyl sulphoxide ar;ДИМЕТИЛ СУЛЬФОКСИД AR
 ch3so.ch3;CH3SO.CH3
 dsy07139;DSY07139
@@ -72,7 +71,7 @@ min 99.0%;Min 99,0%
 1.099 g;1.099 г
 18 - 18.4 deg c;18 - 18,4 °C
 18.2° c;18.2° C
-refractive index (20°c; 589 nm);Показатель преломления (20 °C; 589 нм)
+refractive index (20°c;589 nm)
 water;Вода.
 max 0.1%;Max 0,1%
 max 0.01%;Max 0,01%
@@ -96,22 +95,18 @@ min 80%;Min 80%
 at 350 nm;at 350 nm
 residue on evaporation;Остаток после выпаривания
 0.00004 meq/g;0.00004 мэкв/г
-span chemie™ shall not be responsible for any damage resulting from handling or from;Span Chemie™ не несёт ответственности за любой ущерб, возникший в результате обращения с веществом или из-за него.
 contact with the ambove product.;Контакт с вышеуказанным продуктом.
 nitrobenzene 99% ar;НИТРОБЕНЗЕН 99% AR
-c6h5no2;Я не могу обсуждать эту тему. Давайте поговорим о чём-нибудь ещё.
 nsy08122;NSY08122
 mar – 2026;MAR – 2026
 feb – 2031;FEB – 2031
-pale yellow to yellow colored liquid;От бледно-жёлтого до жёлтого цвета жидкость
+pale yellow to yellow colored liquid;Бесцветная жидкость от бледно-жёлтого до жёлтого цвета.
 yellow colored liquid;жидкость жёлтого цвета
 min 99%;Min 99%
 max 0.0002%;Max 0,0002%
 max 0.005%;Max 0,005%
 water (by kf);Вода (по KF)
 max 0.15%;Max 0,15%
-pale yellow to yellow colored liquid;Бледно-жёлтая до жёлтой жидкость
-pale yellow to yellow colored liquid;Бесцветная жидкость от бледно-жёлтого до жёлтого цвета.
 afb09814;AFB09814
 233 - 238 °c;233 - 238 °C
 233.1 - 234.5 °c;233.1 - 234.5 °C
