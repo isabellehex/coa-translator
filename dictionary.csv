@@ -451,3 +451,4 @@ absorption maxima;Максимумы поглощения
 absorptivity (a 1%/1cm; at λmax);Поглощение (A 1%/1cm; при λmax)
 min 1450;Min 1450
 ratio λmax.p+/-15 nm;Ratio λmax.P+/-15 nm
+max 7%;Max 7%
