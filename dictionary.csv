@@ -129,7 +129,7 @@ methanol (ch3oh);Метанол (CH3OH)
 1.080 g;1.080 g
 colour scale;Шкала цветов
 max 10 apha;Max 10 APHA
-< 10 apha;$<$ 10 APHA
+< 10 apha;< 10 APHA
 titrable acid;Титруемая кислота
 max 0.006 meq/g;Max 0,006 мэкв/г
 0.005 meq/g;0.005 мэкв/г
