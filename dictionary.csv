@@ -495,3 +495,4 @@ identity (uv/vis spectrum);Идентификация (УФ/ВИЗ спектр)
 absorption maxima (buffer ph 7.0);Максимумы поглощения (буфер pH 7.0)
 577 - 584 nm;577 – 584 нм
 584nm;584nm
+specific absorptivity a 1%/1cm (λmax; 0.01%; buffer ph 7.0 on dried substance);Удельный показатель поглощения A 1%/1см (λmax; 0,01%; буфер pH 7,0 на высушенном веществе)
