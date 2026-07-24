@@ -134,3 +134,4 @@ titrable acid;Титруемая кислота
 max 0.006 meq/g;Max 0,006 мэкв/г
 0.005 meq/g;0.005 мэкв/г
 residue on ignition;Остаток после прокаливания
+heavy metals (by icp-oes);Тяжёлые металлы (по ICP-OES)
