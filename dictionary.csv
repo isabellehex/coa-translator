@@ -995,3 +995,4 @@ max 1.0;Max 1.0
 uv absorbance (1 cm cell vs water) at 300 nm;УФ-поглощение (клетка 1 см относительно воды) при 300 нм
 max 0.5;Max 0.5
 uv absorbance (1 cm cell vs water) at 325 nm;УФ-поглощение (клетка 1 см относительно воды) при 325 нм
+max 0.1;Max 0.1
