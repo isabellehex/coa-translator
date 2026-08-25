@@ -1415,3 +1415,4 @@ organism inoculum(cfu) growth esculin recoveryon colourofcolony;Инокулят
 hydrolysis m1540i on m1540i;Гидролиз M1540I на M1540I
 listeria monocytogenes 1/2a 50-100 good-luxuriant positivereaction,>10colonies bluegreen;Listeria monocytogenes 1/2a 50-100 Хорошая-обильная положительная реакция, >10 колоний сине-зелёный
 atcc 35152 (wdcm 00109) blackeningof coloniesw/;ATCC 35152 (WDCM 00109) почернение колоний w/
++ medium opaquehalo;+ medium opaque halo
