@@ -1177,3 +1177,4 @@ max 10 hazen;Макс 10 Хазен
 <2 hazen;$<2$ Hazen
 uv transmittance (1cm cell, ref: water; with air as blank) at 200 nm;Коэффициент пропускания УФ-излучения (клетка 1 см, реф.: вода; с воздухом в качестве холостой пробы) при 200 нм
 min 100%;Min 100%
+uv transmittance (1cm cell, ref: water; with air as blank) at 250 nm;Коэффициент пропускания УФ-излучения (клетка 1 см, реф.: вода; с воздухом в качестве холостой пробы) при 250 нм
