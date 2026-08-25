@@ -939,3 +939,4 @@ specific absorptivity 1%/1cm (at λmax);Удельный показатель п
 min 550.0;Min 550,0
 from ph 7.3 (pink-yellow) to ph 8.7 (green-blue);от pH 7.3 (розово-жёлтый) до pH 8.7 (сине-зелёный)
 pinkish yellow to blue;Розовато-жёлтый до синего
+loss on drying (at 110°c; 1 hr);Потеря в массе при высушивании (при 110°C; 1 ч)
