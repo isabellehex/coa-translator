@@ -1184,3 +1184,4 @@ uv transmittance (with air as blank) at 250 nm;Коэффициент пропу
 <10 apha;$<10$ APHA
 conductivity;Электропроводность
 max 2 µs/cm;Max 2 мкСм/см
+0.485 µs/cm;0.485 µS/cm
