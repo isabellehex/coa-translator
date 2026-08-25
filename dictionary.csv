@@ -1183,3 +1183,4 @@ uv transmittance (with air as blank) at 200 nm;Коэффициент пропу
 uv transmittance (with air as blank) at 250 nm;Коэффициент пропускания УФ-излучения (с воздухом в качестве холостой пробы) при 250 нм
 <10 apha;$<10$ APHA
 conductivity;Электропроводность
+max 2 µs/cm;Max 2 мкСм/см
